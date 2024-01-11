@@ -21,10 +21,6 @@ tab_paretn.pack(expand=1, fill = 'both')
 # tab_todo #
 ############
 
-title = Label(tab_todo, text = "<Todo>", pady=10, padx=10, font=('Terminal', 60))
-title.grid(column = 0, row = 0)
-
-
 # creating treeview
 style = ttk.Style()
 style.configure("Treeview", background="grey40", foreground="black", rowheight=35, fieldbackground="grey10")
@@ -111,3 +107,8 @@ title.grid(column = 0, row = 0)
 
 
 root.mainloop()
+
+# close connection (run after gui is exited)
+cursor.close()
+tasks_db.close()
+print ("Database connection was cloased") # only one connection is made per run
