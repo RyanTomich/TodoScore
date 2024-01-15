@@ -14,6 +14,7 @@ def add():
                            ('{class_entry.get()}', '{assignment_entry.get()}', '{open_entry.get()}', '{due_entry.get()}', '{status_entry.get()}', '100' ) """)
     cursor.execute(insert_query)
     tasks_db.commit()
+    populate()
     print(cursor.rowcount, "Record inserted successfully into TASKS table")
 
 def edit():
@@ -21,6 +22,25 @@ def edit():
 
 def delete():
     print("i delete")
+
+# populating Treeview
+def populate():
+    query = 'SELECT * FROM TASKS'
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    all_tree.tag_configure('normal', background='grey40')
+    all_tree.tag_configure('unstarted', background='grey50')
+    all_tree.tag_configure('woi', background='yellow')
+    all_tree.tag_configure('done', background='green')
+    tag = 'working on it'
+
+    for row in result:
+        print(row)
+        tag = row[4]
+        print (tag)
+        all_tree.insert("",'end',iid=None,
+            values=(row), tags=(tag))
 
 
 
@@ -143,7 +163,7 @@ grade_lable.grid(row=0, column=5, padx=5, pady=5)
 grade_entry = Entry(data_frame, width= 10)
 grade_entry.grid(row=1, column=5, padx=5, pady=5)
 
-
+# Buttons
 button_frame = LabelFrame(tab_todo)
 button_frame.grid(column=0, row=3, padx="5", pady="5")
 
@@ -154,6 +174,7 @@ edit_button.grid(row=0, column=1, padx=5, pady=5)
 delete_button = Button(button_frame, text = "Delete", command = delete, height= 3, width=30)
 delete_button.grid(row=0, column=2, padx=5, pady=5)
 
+populate()
 
 # tab_score #
 
