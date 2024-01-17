@@ -3,46 +3,6 @@ from tkinter import *
 from tkinter import ttk
 import mysql.connector
 
-###################
-# Buttion Actions #
-###################
-
-def add():
-    print("i add")
-    insert_query = (f"""INSERT INTO TASKS (CLASS, ASIGNMENT, OPEN_DATE, DUE_DATE, STATUS, GRADE)
-                           VALUES
-                           ('{class_entry.get()}', '{assignment_entry.get()}', '{open_entry.get()}', '{due_entry.get()}', '{status_entry.get()}', '100' ) """)
-    cursor.execute(insert_query)
-    tasks_db.commit()
-    populate()
-    print(cursor.rowcount, "Record inserted successfully into TASKS table")
-
-def edit():
-    print("i edit")
-
-def delete():
-    print("i delete")
-
-# populating Treeview
-def populate():
-    query = 'SELECT * FROM TASKS'
-    cursor.execute(query)
-    result = cursor.fetchall()
-
-    all_tree.tag_configure('normal', background='grey40')
-    all_tree.tag_configure('unstarted', background='grey50')
-    all_tree.tag_configure('woi', background='yellow')
-    all_tree.tag_configure('done', background='green')
-    tag = 'working on it'
-
-    for row in result:
-        print(row)
-        tag = row[4]
-        print (tag)
-        all_tree.insert("",'end',iid=None,
-            values=(row), tags=(tag))
-
-
 
 #######
 # SQL #
@@ -65,6 +25,7 @@ table = '''CREATE TABLE TASKS(
     DUE_DATE DATE,
     STATUS VARCHAR(13),
     GRADE FLOAT)
+    ID AUTO_INCREMENT PRIMARY KEY
 '''
 
 try:
@@ -74,13 +35,57 @@ except mysql.connector.errors.ProgrammingError:
 
 
 
+###################
+# Buttion Actions #
+###################
+
+def add():
+    id = cursor.lastrowid
+    insert_query = (f"""INSERT INTO TASKS (CLASS, ASIGNMENT, OPEN_DATE, DUE_DATE, STATUS, GRADE, ID)
+                           VALUES
+                           ('{class_entry.get()}', '{assignment_entry.get()}', '{open_entry.get()}', '{due_entry.get()}', '{status_entry.get()}', '100', {id} ) """)
+    cursor.execute(insert_query)
+    tasks_db.commit()
+    populate()
+    print(cursor.rowcount, "Record inserted successfully into TASKS table")
+
+def edit():
+    print("i edit")
+
+def delete():
+    selected = all_tree.item(all_tree.focus())["values"][6]
+    delete_query = "DELETE FROM TASKS WHERE id= %s "
+    cursor.execute(delete_query, (selected,))
+    tasks_db.commit()
+    populate()
+
+
+# populating Treeview
+def populate():
+    all_tree.delete(*all_tree.get_children())
+    query = 'SELECT * FROM TASKS'
+    cursor.execute(query)
+    result = cursor.fetchall()
+
+    all_tree.tag_configure('normal', background='grey40')
+    all_tree.tag_configure('unstarted', background='grey50')
+    all_tree.tag_configure('woi', background='yellow')
+    all_tree.tag_configure('done', background='green')
+    tag = 'working on it'
+
+    for row in result:
+        tag = row[4]
+        all_tree.insert("",'end',iid=None,
+            values=(row), tags=(tag))
+
+
 ############
 # Tkinter #
 ############
 
 root = Tk()
 root.title("<TodoScore>")
-root.geometry('1100x800')
+root.geometry('1200x800')
 
 tab_paretn = ttk.Notebook(root)
 
@@ -108,7 +113,7 @@ all_tree.pack()
 tree_scroll.config(command=all_tree.yview)
 
 # columns
-all_tree['columns'] = ("Class", "Asignment", "Open-Date", "Due-Date", "Status", "Grade")
+all_tree['columns'] = ("Class", "Asignment", "Open-Date", "Due-Date", "Status", "Grade", "Id")
 all_tree.column("#0", width=0, stretch=NO)
 all_tree.column("Class", anchor=W, width=100)
 all_tree.column("Asignment", anchor=W, width=400)
@@ -116,6 +121,7 @@ all_tree.column("Open-Date", anchor=CENTER, width=150)
 all_tree.column("Due-Date", anchor=CENTER, width=150)
 all_tree.column("Status", anchor=W, width=100)
 all_tree.column("Grade", anchor=W, width=100)
+all_tree.column("Id", anchor=W, width=100)
 
 all_tree.heading("#0", text="", anchor=W)
 all_tree.heading("Class", text="Class", anchor=W)
