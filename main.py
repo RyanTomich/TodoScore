@@ -43,14 +43,20 @@ def add():
     id = cursor.lastrowid
     insert_query = (f"""INSERT INTO TASKS (CLASS, ASIGNMENT, OPEN_DATE, DUE_DATE, STATUS, GRADE, ID)
                            VALUES
-                           ('{class_entry.get()}', '{assignment_entry.get()}', '{open_entry.get()}', '{due_entry.get()}', '{status_entry.get()}', '100', {id} ) """)
+                           ('{class_entry.get()}', '{assignment_entry.get()}', '{open_entry.get()}', '{due_entry.get()}', '{status_entry.get()}', '{grade_entry.get()}', {id} ) """)
     cursor.execute(insert_query)
     tasks_db.commit()
     populate()
     print(cursor.rowcount, "Record inserted successfully into TASKS table")
 
 def edit():
-    print("i edit")
+    selected = all_tree.item(all_tree.focus())["values"][6]
+    edit_query = f"""UPDATE TASKS
+                    SET CLASS = '{class_entry.get()}', ASIGNMENT = '{assignment_entry.get()}', OPEN_DATE = '{open_entry.get()}', DUE_DATE = '{due_entry.get()}', STATUS = '{status_entry.get()}', GRADE = '{grade_entry.get()}'
+                    WHERE id= %s """
+    cursor.execute(edit_query, (selected,))
+    tasks_db.commit()
+    populate()
 
 def delete():
     selected = all_tree.item(all_tree.focus())["values"][6]
@@ -78,6 +84,23 @@ def populate():
         all_tree.insert("",'end',iid=None,
             values=(row), tags=(tag))
 
+def select_record(e):
+    class_entry.delete(0, END)
+    assignment_entry.delete(0, END)
+    open_entry.delete(0, END)
+    due_entry.delete(0, END)
+    status_entry.delete(0, END)
+    grade_entry.delete(0, END)
+
+    selected = all_tree.focus()
+    values = all_tree.item(selected, 'values')
+
+    class_entry.insert(0, values[0])
+    assignment_entry.insert(0, values[1])
+    open_entry.insert(0, values[2])
+    due_entry.insert(0, values[3])
+    status_entry.insert(0, values[4])
+    grade_entry.insert(0, values[5])
 
 ############
 # Tkinter #
@@ -133,6 +156,8 @@ all_tree.heading("Grade", text="Status", anchor=W)
 
 all_tree.tag_configure('oddrow', background="grey50")
 all_tree.tag_configure('evenrow', background="grey70")
+
+all_tree.bind("<ButtonRelease-1>", select_record)
 
 
 # Data Enrty
