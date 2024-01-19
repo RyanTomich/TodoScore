@@ -102,6 +102,34 @@ def select_record(e):
     status_entry.insert(0, values[4])
     grade_entry.insert(0, values[5])
 
+def populate_scores(e):
+    classes_query = "SELECT DISTINCT CLASS FROM TASKS;"
+    cursor.execute(classes_query)
+    classes = cursor.fetchall()
+
+    Class_select_query = """SELECT * FROM TASKS"""
+    cursor.execute(Class_select_query)
+    data = cursor.fetchall()
+
+    place_counter = 0
+    for i in classes:
+        place_counter += 1
+        clas = []
+        i = i[0]
+        for task in data:
+            if task[0] == i and task[4] == 'done':
+                clas.append(task[5])
+
+        try:
+            average = sum(clas) / len(clas)
+            class_lable = Label(tab_score, text=f"{i}: {average}")
+            class_lable.grid(row=(place_counter), column=0, padx=5, pady=5)
+        except ZeroDivisionError:
+            average = 0
+            pass
+
+
+
 ############
 # Tkinter #
 ############
@@ -110,14 +138,14 @@ root = Tk()
 root.title("<TodoScore>")
 root.geometry('1200x800')
 
-tab_paretn = ttk.Notebook(root)
+tab_parent = ttk.Notebook(root)
 
-tab_todo = ttk.Frame(tab_paretn)
-tab_score = ttk.Frame(tab_paretn)
+tab_todo = ttk.Frame(tab_parent)
+tab_score = ttk.Frame(tab_parent)
 
-tab_paretn.add(tab_todo, text='todo')
-tab_paretn.add(tab_score, text='grades')
-tab_paretn.pack(expand=1, fill = 'both')
+tab_parent.add(tab_todo, text='todo')
+tab_parent.add(tab_score, text='grades')
+tab_parent.pack(expand=1, fill = 'both')
 
 # tab_todo #
 
@@ -152,7 +180,7 @@ all_tree.heading("Asignment", text="Asignment", anchor=W)
 all_tree.heading("Open-Date", text="Open-Date", anchor=CENTER)
 all_tree.heading("Due-Date", text="Due-Date", anchor=CENTER)
 all_tree.heading("Status", text="Status", anchor=W)
-all_tree.heading("Grade", text="Status", anchor=W)
+all_tree.heading("Grade", text="Grade", anchor=W)
 
 all_tree.tag_configure('oddrow', background="grey50")
 all_tree.tag_configure('evenrow', background="grey70")
@@ -207,10 +235,7 @@ delete_button.grid(row=0, column=2, padx=5, pady=5)
 
 populate()
 
-# tab_score #
-
-title = Label(tab_score, text = "<Score>", pady=10, padx=10, font=('Terminal', 60))
-title.grid(column = 0, row = 0)
+tab_parent.bind('<<NotebookTabChanged>>', populate_scores) # Updates scores tab every tab change
 
 
 root.mainloop()
